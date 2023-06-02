@@ -14,7 +14,8 @@ public class MemberDAO {
         return memberRepository.countByUserId(userId);
     }
 
-    public void create(Member member) {
-        memberRepository.save(member);
+    public Boolean create(Member member) {
+        Long count = memberRepository.save(member).getId();
+        return count > 0;
     }
 }
