@@ -2,13 +2,15 @@ package kr.co.bg.blog.controller;
 
 import javax.validation.Valid;
 import kr.co.bg.blog.dto.MemberDTO;
+import kr.co.bg.blog.exception.member.MemberException;
+import kr.co.bg.blog.response.ExceptionResponse;
 import kr.co.bg.blog.response.Response;
 import kr.co.bg.blog.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RequiredArgsConstructor
@@ -17,10 +19,19 @@ public class MemberController {
 
     private final MemberService memberService;
 
-    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/sign-up")
-    public Response signUp(@Valid @RequestBody MemberDTO memberDTO) {
-        memberService.signUp(memberDTO.getUserId(), memberDTO.getPassword(), memberDTO.getName());
-        return Response.created();
+    public ResponseEntity signUp(@Valid @RequestBody MemberDTO memberDTO) {
+        try {
+            memberService.signUp(memberDTO.getUserId(), memberDTO.getPassword(), memberDTO.getName());
+            return Response.builder()
+                    .status(HttpStatus.CREATED)
+                    .build();
+        } catch (MemberException e) {
+            return ExceptionResponse.builder()
+                    .status(e.getHttpStatus())
+                    .errorCode(e.getMemberError())
+                    .data(e.getMessage())
+                    .build();
+        }
     }
 }
