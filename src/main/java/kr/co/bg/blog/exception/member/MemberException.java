@@ -5,8 +5,8 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 public class MemberException extends RuntimeException {
-    private MemberErrorCode memberError;
-    private String message;
+    private final MemberErrorCode memberError;
+    private final String message;
 
     public MemberException(MemberErrorCode memberError) {
         this(memberError, memberError.getMessage());
@@ -23,6 +23,6 @@ public class MemberException extends RuntimeException {
     }
 
     public String getMemberError() {
-        return this.memberError.getErrorCode().toString();
+        return this.memberError.getErrorCode();
     }
 }
