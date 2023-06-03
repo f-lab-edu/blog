@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 @Getter
+@Builder
 public class MemberDTO {
 
     @NotBlank
@@ -20,11 +21,4 @@ public class MemberDTO {
     @NotBlank
     @Size(min = 2, max = 10)
     private String name;
-
-    @Builder
-    public MemberDTO(String userId, String password, String name) {
-        this.userId = userId;
-        this.password = password;
-        this.name = name;
-    }
 }
