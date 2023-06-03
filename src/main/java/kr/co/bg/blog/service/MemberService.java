@@ -23,7 +23,7 @@ public class MemberService {
 
         duplicatedCheckByUserId(userId);
 
-        Boolean isSaved = memberDAO.create(newMember);
+        boolean isSaved = memberDAO.create(newMember);
 
         if (!isSaved) {
             throw new MemberException(MemberErrorCode.REGIST_MEMBER_FAILED);
