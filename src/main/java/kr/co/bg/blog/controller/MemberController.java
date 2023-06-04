@@ -2,6 +2,7 @@ package kr.co.bg.blog.controller;
 
 import javax.validation.Valid;
 import kr.co.bg.blog.dto.MemberDTO;
+import kr.co.bg.blog.exception.member.MemberErrorCode;
 import kr.co.bg.blog.exception.member.MemberException;
 import kr.co.bg.blog.response.ExceptionResponse;
 import kr.co.bg.blog.response.Response;
@@ -22,7 +23,14 @@ public class MemberController {
     @PostMapping("/sign-up")
     public ResponseEntity signUp(@Valid @RequestBody MemberDTO memberDTO) {
         try {
-            memberService.signUp(memberDTO.getUserId(), memberDTO.getPassword(), memberDTO.getName());
+            boolean isSuccess =
+                    memberService.signUp(
+                            memberDTO.getUserId(), memberDTO.getPassword(), memberDTO.getName());
+
+            if (!isSuccess) {
+                throw new MemberException(MemberErrorCode.REGIST_MEMBER_FAILED);
+            }
+
             return Response.builder()
                     .status(HttpStatus.CREATED)
                     .build();
