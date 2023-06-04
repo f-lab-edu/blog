@@ -14,7 +14,7 @@ public class MemberService {
     private final MemberDAO memberDAO;
 
     @Transactional
-    public void signUp(String userId, String password, String name) {
+    public boolean signUp(String userId, String password, String name) {
         Member newMember = Member.builder()
                 .userId(userId)
                 .password(password)
@@ -23,11 +23,7 @@ public class MemberService {
 
         duplicatedCheckByUserId(userId);
 
-        boolean isSaved = memberDAO.create(newMember);
-
-        if (!isSaved) {
-            throw new MemberException(MemberErrorCode.REGIST_MEMBER_FAILED);
-        }
+        return memberDAO.create(newMember);
     }
 
     private void duplicatedCheckByUserId(String userId) {
