@@ -4,6 +4,7 @@ import kr.co.bg.blog.dao.MemberDAO;
 import kr.co.bg.blog.domain.Member;
 import kr.co.bg.blog.exception.member.MemberErrorCode;
 import kr.co.bg.blog.exception.member.MemberException;
+import kr.co.bg.blog.util.BcryptUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,11 +14,13 @@ import org.springframework.transaction.annotation.Transactional;
 public class MemberService {
     private final MemberDAO memberDAO;
 
+    private final BcryptUtil bcryptUtil;
+
     @Transactional
     public boolean signUp(String userId, String password, String name) {
         Member newMember = Member.builder()
                 .userId(userId)
-                .password(password)
+                .password(bcryptUtil.encode(password))
                 .name(name)
                 .build();
 
