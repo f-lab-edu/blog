@@ -36,4 +36,9 @@ public class MemberService {
             throw new MemberException(MemberErrorCode.DUPLICATED_USER_ID);
         }
     }
+
+    public boolean signIn(String userId, String password) {
+        Member member = memberDAO.findByUserId(userId);
+        return passwordEncoder.matches(password, member.getPassword());
+    }
 }
