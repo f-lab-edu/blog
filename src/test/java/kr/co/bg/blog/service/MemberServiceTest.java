@@ -111,4 +111,38 @@ class MemberServiceTest {
         // then
         assertThat(isLoginSuccess).isTrue();
     }
+
+    @Test
+    void 로그인_비밀번호_일치하지_않는_실패_테스트() {
+        // given
+        SignInRequest user = SignInRequest.builder()
+                .userId("TEST")
+                .password("TEST123")
+                .build();
+
+        Member member = Member.builder()
+                .userId(user.getUserId())
+                .password(passwordEncoder.encode("DIFFERENT_PASSWORD"))
+                .build();
+
+        given(memberDAO.findByUserId(anyString())).willReturn(member);
+
+        // when
+        boolean isLoginSuccess = memberService.signIn(user.getUserId(), user.getPassword());
+
+        // then
+        assertThat(isLoginSuccess).isFalse();
+    }
+
+    @Test
+    void 로그인_USER_ID가_존재하지_않는_실패_테스트() {
+        // given
+        given(memberDAO.findByUserId(anyString())).willThrow(MemberException.class);
+
+        // when
+        boolean isLoginSuccess = memberService.signIn("TEST", "PASSWORD");
+
+        // then
+        assertThat(isLoginSuccess).isFalse();
+    }
 }
