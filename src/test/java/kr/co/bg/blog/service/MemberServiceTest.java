@@ -41,8 +41,8 @@ class MemberServiceTest {
                 .name("TEST_NAME")
                 .build();
 
-        given(memberDAO.create(any())).willReturn(true);
-        given(memberDAO.countByUserId(any())).willReturn(0L);
+        given(memberDAO.create(any(Member.class))).willReturn(true);
+        given(memberDAO.countByUserId(anyString())).willReturn(0L);
 
         // when
         boolean isSuccess = memberService.signUp(
@@ -61,8 +61,8 @@ class MemberServiceTest {
                 .name("TEST_NAME")
                 .build();
 
-        given(memberDAO.create(any())).willReturn(false);
-        given(memberDAO.countByUserId(any())).willReturn(0L);
+        given(memberDAO.create(any(Member.class))).willReturn(false);
+        given(memberDAO.countByUserId(anyString())).willReturn(0L);
 
         // when
         boolean isSuccess = memberService.signUp(
@@ -81,7 +81,7 @@ class MemberServiceTest {
                 .name("TEST_NAME")
                 .build();
 
-        given(memberDAO.countByUserId(any())).willReturn(1L);
+        given(memberDAO.countByUserId(anyString())).willReturn(1L);
 
         // then
         assertThrows(
@@ -105,8 +105,7 @@ class MemberServiceTest {
                 .password(passwordEncoder.encode(user.getPassword()))
                 .build();
 
-        given(memberDAO.findByUserId(user.getUserId())).willReturn(member);
-        given(passwordEncoder.matches(user.getPassword(), member.getPassword())).willReturn(true);
+        given(memberDAO.findByUserId(anyString())).willReturn(member);
 
         // when
         boolean isLoginSuccess = memberService.signIn(user.getUserId(), user.getPassword());
