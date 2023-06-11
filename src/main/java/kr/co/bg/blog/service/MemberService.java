@@ -38,7 +38,11 @@ public class MemberService {
     }
 
     public boolean signIn(String userId, String password) {
-        Member member = memberDAO.findByUserId(userId);
-        return passwordEncoder.matches(password, member.getPassword());
+        try {
+            Member member = memberDAO.findByUserId(userId);
+            return passwordEncoder.matches(password, member.getPassword());
+        } catch (MemberException e) {
+            return false;
+        }
     }
 }
