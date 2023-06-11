@@ -91,14 +91,12 @@ class MemberServiceTest {
     }
 
     @Test
-    void 로그인_테스트() {
+    void 로그인_성공_테스트() {
         // given
         SignInRequest user = SignInRequest.builder()
                 .userId("TEST")
                 .password("TEST123")
                 .build();
-
-        given(passwordEncoder.encode(user.getPassword())).willReturn("encodedPassword");
 
         Member member = Member.builder()
                 .userId(user.getUserId())
