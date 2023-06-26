@@ -6,6 +6,8 @@ import kr.co.bg.blog.domain.Member;
 import kr.co.bg.blog.repository.MemberRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
@@ -57,5 +59,23 @@ class MemberDAOTest {
 
         // then
         assertThat(userIdCount).isEqualTo(1L);
+    }
+
+    @ValueSource(strings = {"TEST_ID"})
+    @ParameterizedTest
+    void findByUserId(String userId) {
+        // given
+        Member givenMember = Member.builder()
+                .userId(userId)
+                .password("TEST123")
+                .name("TEST_NAME")
+                .build();
+        memberDAO.create(givenMember);
+
+        // when
+        Member member = memberDAO.findByUserId(userId);
+
+        // then
+        assertThat(member.getUserId()).isEqualTo(userId);
     }
 }

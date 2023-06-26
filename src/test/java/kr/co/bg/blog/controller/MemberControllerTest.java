@@ -10,10 +10,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import kr.co.bg.blog.config.SecurityConfiguration;
-import kr.co.bg.blog.dto.MemberDTO;
 import kr.co.bg.blog.exception.member.MemberErrorCode;
+import kr.co.bg.blog.request.SignInRequest;
+import kr.co.bg.blog.request.SignUpRequest;
 import kr.co.bg.blog.service.MemberService;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -38,13 +42,19 @@ class MemberControllerTest {
 
     @Test
     void 회원가입_성공_테스트() throws Exception {
-        MemberDTO givenMember = MemberDTO.builder()
+        SignUpRequest givenMember = SignUpRequest.builder()
                 .userId("TEST_ID")
                 .password("TEST123")
                 .name("TEST_NAME")
                 .build();
 
-        given(memberService.signUp(givenMember.getUserId(), givenMember.getPassword(), givenMember.getName())).willReturn(true);
+        given(
+                memberService.signUp(
+                        givenMember.getUserId(),
+                        givenMember.getPassword(),
+                        givenMember.getName()
+                )
+        ).willReturn(true);
 
         String content = objectMapper.writeValueAsString(givenMember);
 
@@ -58,7 +68,7 @@ class MemberControllerTest {
 
     @Test
     void 회원가입_실패_테스트() throws Exception {
-        MemberDTO givenMember = MemberDTO.builder()
+        SignUpRequest givenMember = SignUpRequest.builder()
                 .userId("TEST_ID")
                 .password("TEST123")
                 .name("TEST_NAME")
@@ -85,10 +95,12 @@ class MemberControllerTest {
                 .andDo(print());
     }
 
-    @Test
-    void 회원가입_USER_ID_공백_테스트() throws Exception {
-        MemberDTO givenMember = MemberDTO.builder()
-                .userId(" ")
+    @ParameterizedTest
+    @ValueSource(strings = {" ", "A", "ABCDEFGHIJK"})
+    @NullAndEmptySource
+    void 회원가입_USER_ID_테스트(String userId) throws Exception {
+        SignUpRequest givenMember = SignUpRequest.builder()
+                .userId(userId)
                 .password("TEST123")
                 .name("TEST_NAME")
                 .build();
@@ -101,71 +113,17 @@ class MemberControllerTest {
                         .with(csrf()))
                 .andExpect(status().is(HttpStatus.BAD_REQUEST.value()))
                 .andExpect(jsonPath("$.status").value(HttpStatus.BAD_REQUEST.value()))
-                .andExpect(jsonPath("$.data").value(containsString("userId")));
+                .andExpect(jsonPath("$.data").value(containsString("userId")))
+                .andDo(print());
     }
 
-    @Test
-    void 회원가입_USER_ID_2자_미만_테스트() throws Exception {
-        MemberDTO givenMember = MemberDTO.builder()
-                .userId("A")
-                .password("TEST123")
-                .name("TEST_NAME")
-                .build();
-
-        String content = objectMapper.writeValueAsString(givenMember);
-
-        mockMvc.perform(post("/sign-up")
-                        .content(content)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .with(csrf()))
-                .andExpect(status().is(HttpStatus.BAD_REQUEST.value()))
-                .andExpect(jsonPath("$.status").value(HttpStatus.BAD_REQUEST.value()))
-                .andExpect(jsonPath("$.data").value(containsString("userId")));
-    }
-
-    @Test
-    void 회원가입_USER_ID_10자_초과_테스트() throws Exception {
-        MemberDTO givenMember = MemberDTO.builder()
-                .userId("ABCDEFGHIJK")
-                .password("TEST123")
-                .name("TEST_NAME")
-                .build();
-
-        String content = objectMapper.writeValueAsString(givenMember);
-
-        mockMvc.perform(post("/sign-up")
-                        .content(content)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .with(csrf()))
-                .andExpect(status().is(HttpStatus.BAD_REQUEST.value()))
-                .andExpect(jsonPath("$.status").value(HttpStatus.BAD_REQUEST.value()))
-                .andExpect(jsonPath("$.data").value(containsString("userId")));
-    }
-
-    @Test
-    void 회원가입_PASSWORD_공백만_있는_경우_테스트() throws Exception {
-        MemberDTO givenMember = MemberDTO.builder()
+    @ParameterizedTest
+    @ValueSource(strings = {"      ", "      1", "ABCD1", "ABCDEFGHIJKL1"})
+    @NullAndEmptySource
+    void 회원가입_PASSWORD_테스트(String password) throws Exception {
+        SignUpRequest givenMember = SignUpRequest.builder()
                 .userId("TEST_ID")
-                .password("      ")
-                .name("TEST_NAME")
-                .build();
-
-        String content = objectMapper.writeValueAsString(givenMember);
-
-        mockMvc.perform(post("/sign-up")
-                        .content(content)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .with(csrf()))
-                .andExpect(status().is(HttpStatus.BAD_REQUEST.value()))
-                .andExpect(jsonPath("$.status").value(HttpStatus.BAD_REQUEST.value()))
-                .andExpect(jsonPath("$.data").value(containsString("password")));
-    }
-
-    @Test
-    void 회원가입_PASSWORD_공백과_숫자_조합_테스트() throws Exception {
-        MemberDTO givenMember = MemberDTO.builder()
-                .userId("TEST_ID")
-                .password("      1")
+                .password(password)
                 .name("TEST_NAME")
                 .build();
 
@@ -181,71 +139,14 @@ class MemberControllerTest {
                 .andDo(print());
     }
 
-    @Test
-    void 회원가입_PASSWORD_6자_미만_테스트() throws Exception {
-        MemberDTO givenMember = MemberDTO.builder()
-                .userId("TEST_ID")
-                .password("ABCD1")
-                .name("TEST_NAME")
-                .build();
-
-        String content = objectMapper.writeValueAsString(givenMember);
-
-        mockMvc.perform(post("/sign-up")
-                        .content(content)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .with(csrf()))
-                .andExpect(status().is(HttpStatus.BAD_REQUEST.value()))
-                .andExpect(jsonPath("$.status").value(HttpStatus.BAD_REQUEST.value()))
-                .andExpect(jsonPath("$.data").value(containsString("password")))
-                .andDo(print());
-    }
-
-    @Test
-    void 회원가입_PASSWORD_12자_초과_테스트() throws Exception {
-        MemberDTO givenMember = MemberDTO.builder()
-                .userId("TEST_ID")
-                .password("ABCDEFGHIJKL1")
-                .name("TEST_NAME")
-                .build();
-
-        String content = objectMapper.writeValueAsString(givenMember);
-
-        mockMvc.perform(post("/sign-up")
-                        .content(content)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .with(csrf()))
-                .andExpect(status().is(HttpStatus.BAD_REQUEST.value()))
-                .andExpect(jsonPath("$.status").value(HttpStatus.BAD_REQUEST.value()))
-                .andExpect(jsonPath("$.data").value(containsString("password")))
-                .andDo(print());
-    }
-
-    @Test
-    void 회원가입_NAME_공백_테스트() throws Exception {
-        MemberDTO givenMember = MemberDTO.builder()
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = {" ", "김", "홍길동홍길동홍길동홍길"})
+    void 회원가입_NAME_테스트(String name) throws Exception {
+        SignUpRequest givenMember = SignUpRequest.builder()
                 .userId("TEST_ID")
                 .password("TEST123")
-                .name(" ")
-                .build();
-
-        String content = objectMapper.writeValueAsString(givenMember);
-
-        mockMvc.perform(post("/sign-up")
-                        .content(content)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .with(csrf()))
-                .andExpect(status().is(HttpStatus.BAD_REQUEST.value()))
-                .andExpect(jsonPath("$.status").value(HttpStatus.BAD_REQUEST.value()))
-                .andExpect(jsonPath("$.data").value(containsString("name")));
-    }
-
-    @Test
-    void 회원가입_NAME_2자_미만_테스트() throws Exception {
-        MemberDTO givenMember = MemberDTO.builder()
-                .userId("TEST_ID")
-                .password("TEST123")
-                .name("김")
+                .name(name)
                 .build();
 
         String content = objectMapper.writeValueAsString(givenMember);
@@ -261,22 +162,93 @@ class MemberControllerTest {
     }
 
     @Test
-    void 회원가입_NAME_10자_초과_테스트() throws Exception {
-        MemberDTO givenMember = MemberDTO.builder()
-                .userId("TEST_ID")
+    void 로그인_성공_테스트() throws Exception {
+        // given
+        SignInRequest loginUser = SignInRequest.builder()
+                .userId("TEST")
                 .password("TEST123")
-                .name("홍길동홍길동홍길동홍길")
+                .build();
+
+        given(memberService.signIn(loginUser.getUserId(), loginUser.getPassword())).willReturn(true);
+
+        String content = objectMapper.writeValueAsString(loginUser);
+
+        // then
+        mockMvc.perform(post("/sign-in")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(csrf())
+                        .content(content))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(HttpStatus.OK.value()))
+                .andDo(print());
+    }
+
+    @Test
+    void 로그인_실패_테스트() throws Exception {
+        // given
+        SignInRequest loginUser = SignInRequest.builder()
+                .userId("TEST")
+                .password("TEST123")
+                .build();
+
+        given(memberService.signIn(loginUser.getUserId(), loginUser.getPassword())).willReturn(false);
+
+        String content = objectMapper.writeValueAsString(loginUser);
+
+        // then
+        mockMvc.perform(post("/sign-in")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(csrf())
+                        .content(content))
+                .andDo(print())
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.status").value(HttpStatus.UNAUTHORIZED.value()))
+                .andExpect(jsonPath("$.errorCode").value(MemberErrorCode.INVALID_USER.getErrorCode()))
+                .andExpect(jsonPath("$.data").value(MemberErrorCode.INVALID_USER.getMessage()))
+                .andDo(print());
+    }
+
+    @ValueSource(strings = {" ", "A", "ABCDEFGHIJK"})
+    @NullAndEmptySource
+    @ParameterizedTest
+    void 로그인_USER_ID_테스트(String userId) throws Exception {
+        SignInRequest givenMember = SignInRequest.builder()
+                .userId(userId)
+                .password("TEST123")
                 .build();
 
         String content = objectMapper.writeValueAsString(givenMember);
 
-        mockMvc.perform(post("/sign-up")
+        mockMvc.perform(post("/sign-in")
+                        .content(content)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(csrf()))
+                .andDo(print())
+                .andExpect(status().is(HttpStatus.BAD_REQUEST.value()))
+                .andExpect(jsonPath("$.status").value(HttpStatus.BAD_REQUEST.value()))
+                .andExpect(jsonPath("$.data").value(containsString("userId")))
+                .andDo(print());
+    }
+
+    @ValueSource(strings = {"     1", "      ", "ABCD1", "ABCDEFGHIJKL1"})
+    @NullAndEmptySource
+    @ParameterizedTest
+    void 로그인_PASSWORD_테스트(String password) throws Exception {
+        SignInRequest givenMember = SignInRequest.builder()
+                .userId("TEST_ID")
+                .password(password)
+                .build();
+
+        String content = objectMapper.writeValueAsString(givenMember);
+
+        mockMvc.perform(post("/sign-in")
                         .content(content)
                         .contentType(MediaType.APPLICATION_JSON)
                         .with(csrf()))
                 .andExpect(status().is(HttpStatus.BAD_REQUEST.value()))
                 .andExpect(jsonPath("$.status").value(HttpStatus.BAD_REQUEST.value()))
-                .andExpect(jsonPath("$.data").value(containsString("name")))
+                .andExpect(jsonPath("$.data").value(containsString("password")))
                 .andDo(print());
     }
 }

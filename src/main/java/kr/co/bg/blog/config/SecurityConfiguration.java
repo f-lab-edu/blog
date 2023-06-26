@@ -9,12 +9,14 @@ import org.springframework.security.web.SecurityFilterChain;
 
 @EnableWebSecurity
 public class SecurityConfiguration {
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity
                 .httpBasic().disable()
                 .authorizeHttpRequests()
                 .antMatchers("/sign-up").permitAll()
+                .antMatchers("/sign-in").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .build();

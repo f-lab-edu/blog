@@ -5,20 +5,21 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 class BcryptUtilTest {
 
-    private BcryptUtil bcryptUtil;
+    private PasswordEncoder passwordEncoder;
 
     @BeforeEach
     public void setUp() {
-        this.bcryptUtil = new BcryptUtil(new BCryptPasswordEncoder());
+        this.passwordEncoder = new BCryptPasswordEncoder();
     }
 
     @Test
-    void 비밀번호_암호화_검증_테스트() {
+    public void Bcrypt_검증_테스트() {
         String rawPassword = "test123";
-        String encode = bcryptUtil.encode(rawPassword);
-        assertThat(bcryptUtil.matches(rawPassword, encode)).isTrue();
+        String encodePassword = passwordEncoder.encode(rawPassword);
+        assertThat(passwordEncoder.matches(rawPassword, encodePassword)).isTrue();
     }
 }
